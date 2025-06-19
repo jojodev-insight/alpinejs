@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus text-primary display-4"></i>
+                    <h3 class="mt-3">Create Account</h3>
+                    <p class="text-muted">Join us to start tracking your expenses</p>
+                </div>
+
+                <form method="POST" x-data="registerForm()">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   x-model="form.first_name"
+                                   required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   x-model="form.last_name"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   x-model="form.username"
+                                   required>
+                        </div>
+                        <div class="form-text">3-20 characters, letters, numbers, and underscores only</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   x-model="form.email"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   x-model="form.password"
+                                   required>
+                        </div>
+                        <div class="form-text">At least 8 characters with uppercase, lowercase, and number</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="confirm_password" 
+                                   name="confirm_password" 
+                                   x-model="form.confirm_password"
+                                   :class="{'is-invalid': form.password && form.confirm_password && form.password !== form.confirm_password}"
+                                   required>
+                        </div>
+                        <div x-show="form.password && form.confirm_password && form.password !== form.confirm_password" 
+                             class="invalid-feedback">
+                            Passwords do not match
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                            class="btn btn-primary w-100 mb-3"
+                            :disabled="loading || (form.password && form.confirm_password && form.password !== form.confirm_password)">
+                        <span x-show="!loading">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </span>
+                        <span x-show="loading">
+                            <span class="spinner-border spinner-border-sm me-2"></span>Creating account...
+                        </span>
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-0">
+                            Already have an account? 
+                            <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Sign in</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function registerForm() {
+    return {
+        form: {
+            first_name: '',
+            last_name: '',
+            username: '',
+            email: '',
+            password: '',
+            confirm_password: ''
+        },
+        loading: false
+    }
+}
+</script>
+{% endblock %}

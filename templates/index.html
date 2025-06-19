@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-5 rounded">
+    <div class="text-center">
+        <i class="bi bi-wallet2 display-1 mb-3"></i>
+        <h1 class="display-4 fw-bold mb-3">Expense Tracker</h1>
+        <p class="lead mb-4">Take control of your finances with our intuitive expense tracking application</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-person-plus me-2"></i>Get Started
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up-arrow text-primary display-4 mb-3"></i>
+                <h5 class="card-title">Track Expenses</h5>
+                <p class="card-text">Easily add, categorize, and manage your daily expenses with our intuitive interface.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-pie-chart text-success display-4 mb-3"></i>
+                <h5 class="card-title">Visual Analytics</h5>
+                <p class="card-text">Get insights into your spending patterns with beautiful charts and detailed reports.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-download text-info display-4 mb-3"></i>
+                <h5 class="card-title">Export Data</h5>
+                <p class="card-text">Export your expense data to CSV or PDF formats for external analysis or record keeping.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-6">
+        <h3 class="mb-3">Why Choose Expense Tracker?</h3>
+        <ul class="list-unstyled">
+            <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong>Simple & Intuitive:</strong> Clean interface designed for ease of use
+            </li>
+            <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong>Secure:</strong> Your financial data is protected with industry-standard security
+            </li>
+            <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong>Comprehensive:</strong> Track, analyze, and export your expense data
+            </li>
+            <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong>Responsive:</strong> Works perfectly on desktop, tablet, and mobile devices
+            </li>
+        </ul>
+    </div>
+    
+    <div class="col-lg-6">
+        <h3 class="mb-3">Key Features</h3>
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="feature-item">
+                    <i class="bi bi-plus-circle text-primary me-2"></i>
+                    <small>Add Expenses</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="feature-item">
+                    <i class="bi bi-tags text-primary me-2"></i>
+                    <small>Categorize</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="feature-item">
+                    <i class="bi bi-search text-primary me-2"></i>
+                    <small>Search & Filter</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="feature-item">
+                    <i class="bi bi-calendar3 text-primary me-2"></i>
+                    <small>Date Tracking</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="feature-item">
+                    <i class="bi bi-bar-chart text-primary me-2"></i>
+                    <small>Analytics</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="feature-item">
+                    <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                    <small>Export Reports</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

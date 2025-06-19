@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Expense Tracker{% endblock %}
+
+{% block content %}
+<div x-data="analyticsApp()" x-init="loadData()">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="mb-1">Analytics</h2>
+        <p class="text-muted mb-0">Visualize your spending patterns and trends</p>
+    </div>
+
+    <!-- Year Selection -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label for="year" class="form-label">Select Year</label>
+            <select class="form-select" id="year" x-model="selectedYear" @change="loadData()">
+                <option :value="currentYear" x-text="currentYear"></option>
+                <option :value="currentYear - 1" x-text="currentYear - 1"></option>
+                <option :value="currentYear - 2" x-text="currentYear - 2"></option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading analytics...</p>
+    </div>
+
+    <!-- Charts Section -->
+    <div x-show="!loading">
+        <div class="row g-4">
+            <!-- Monthly Trend Chart -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Monthly Spending Trend</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="monthlyTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Distribution -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Category Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Categories Table -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Top Spending Categories</h5>
+                    </div>
+                    <div class="card-body">
+                        <div x-show="topCategories.length > 0">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Total Amount</th>
+                                            <th>Number of Expenses</th>
+                                            <th>Average per Expense</th>
+                                            <th>Percentage of Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="category in topCategories" :key="category.category">
+                                            <tr>
+                                                <td>
+                                                    <span class="badge me-2" :style="`background-color: ${category.color}`">&nbsp;</span>
+                                                    <span x-text="category.category"></span>
+                                                </td>
+                                                <td class="fw-bold text-primary" x-text="formatCurrency(category.total)"></td>
+                                                <td x-text="category.count"></td>
+                                                <td x-text="formatCurrency(category.total / category.count)"></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                            <div class="progress-bar" 
+                                                                 :style="`width: ${category.percentage}%; background-color: ${category.color}`">
+                                                            </div>
+                                                        </div>
+                                                        <small x-text="`${category.percentage.toFixed(1)}%`"></small>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div x-show="topCategories.length === 0" class="text-center py-4">
+                            <i class="bi bi-bar-chart text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No expense data available for the selected year.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyticsApp() {
+    return {
+        selectedYear: new Date().getFullYear(),
+        currentYear: new Date().getFullYear(),
+        loading: false,
+        monthlyData: [],
+        topCategories: [],
+        charts: {
+            monthly: null,
+            category: null
+        },
+        
+        async loadData() {
+            this.loading = true;
+            try {
+                // Load top categories data
+                const response = await fetch(`/api/stats/summary`);
+                const data = await response.json();
+                
+                // Process data for display
+                this.processTopCategories({{ top_categories|tojson|safe }});
+                this.processMonthlyData({{ yearly_summary|tojson|safe }});
+                
+                // Update charts
+                this.$nextTick(() => {
+                    this.updateCharts();
+                });
+            } catch (error) {
+                console.error('Failed to load analytics data:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        processTopCategories(categories) {
+            const total = categories.reduce((sum, cat) => sum + parseFloat(cat.total), 0);
+            
+            this.topCategories = categories.map(cat => ({
+                ...cat,
+                total: parseFloat(cat.total),
+                count: parseInt(cat.count),
+                percentage: total > 0 ? (parseFloat(cat.total) / total) * 100 : 0
+            }));
+        },
+        
+        processMonthlyData(yearlyData) {
+            const monthNames = [
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ];
+            
+            // Initialize all months with 0
+            this.monthlyData = monthNames.map((name, index) => {
+                const monthData = yearlyData.find(d => parseInt(d.month) === index + 1);
+                return {
+                    month: name,
+                    total: monthData ? parseFloat(monthData.total) : 0,
+                    count: monthData ? parseInt(monthData.count) : 0
+                };
+            });
+        },
+        
+        updateCharts() {
+            this.createMonthlyTrendChart();
+            this.createCategoryChart();
+        },
+        
+        createMonthlyTrendChart() {
+            if (this.charts.monthly) {
+                this.charts.monthly.destroy();
+            }
+            
+            const ctx = document.getElementById('monthlyTrendChart');
+            if (!ctx) return;
+            
+            this.charts.monthly = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: this.monthlyData.map(d => d.month),
+                    datasets: [{
+                        label: 'Monthly Spending',
+                        data: this.monthlyData.map(d => d.total),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        },
+        
+        createCategoryChart() {
+            if (this.charts.category) {
+                this.charts.category.destroy();
+            }
+            
+            const ctx = document.getElementById('categoryChart');
+            if (!ctx || this.topCategories.length === 0) return;
+            
+            this.charts.category = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: this.topCategories.map(c => c.category),
+                    datasets: [{
+                        data: this.topCategories.map(c => c.total),
+                        backgroundColor: this.topCategories.map(c => c.color)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        },
+        
+        formatCurrency(amount) {
+            return ExpenseTracker.utils.formatCurrency(amount);
+        }
+    }
+}
+</script>
+{% endblock %}

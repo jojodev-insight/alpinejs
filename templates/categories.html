@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Expense Tracker{% endblock %}
+
+{% block content %}
+<div x-data="categoriesApp()" x-init="loadCategories()">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Categories</h2>
+            <p class="text-muted mb-0">Organize your expenses with custom categories</p>
+        </div>
+        <button type="button" 
+                class="btn btn-primary" 
+                data-bs-toggle="modal" 
+                data-bs-target="#categoryModal"
+                @click="openModal('add')">
+            <i class="bi bi-plus-lg me-2"></i>Add Category
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading categories...</p>
+    </div>
+
+    <!-- Categories Grid -->
+    <div x-show="!loading">
+        <div x-show="categories.length > 0" class="row g-4">
+            <template x-for="category in categories" :key="category.id">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle me-3" 
+                                         :style="`background-color: ${category.color}; width: 40px; height: 40px;`">
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1" x-text="category.name"></h6>
+                                        <small class="text-muted" x-text="category.description || 'No description'"></small>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" 
+                                            type="button" 
+                                            data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <button class="dropdown-item" 
+                                                    @click="openModal('edit', category)"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#categoryModal">
+                                                <i class="bi bi-pencil me-2"></i>Edit
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item text-danger" 
+                                                    @click="deleteCategory(category.id)">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <small class="text-muted">
+                                    Created: <span x-text="formatDate(category.created_at)"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="categories.length === 0" class="text-center py-5">
+            <i class="bi bi-tags text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">No categories found</h4>
+            <p class="text-muted">Start by creating your first expense category.</p>
+            <button type="button" 
+                    class="btn btn-primary"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#categoryModal"
+                    @click="openModal('add')">
+                <i class="bi bi-plus-lg me-2"></i>Create First Category
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" x-data="categoryFormApp()">
+            <div class="modal-header">
+                <h5 class="modal-title" x-text="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="submitForm()">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               x-model="form.name" 
+                               required
+                               maxlength="50">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  rows="2" 
+                                  x-model="form.description"
+                                  maxlength="200"></textarea>
+                        <div class="form-text">Optional: Brief description of this category</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="color" 
+                                   class="form-control form-control-color" 
+                                   id="color" 
+                                   x-model="form.color"
+                                   style="width: 60px; height: 40px;">
+                            <div class="d-flex gap-2">
+                                <template x-for="color in predefinedColors">
+                                    <button type="button"
+                                            class="btn p-0 border"
+                                            :style="`background-color: ${color}; width: 30px; height: 30px; border-radius: 50%;`"
+                                            @click="form.color = color">
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div class="mb-3">
+                        <label class="form-label">Preview</label>
+                        <div class="d-flex align-items-center gap-2 p-2 border rounded">
+                            <div class="rounded-circle" 
+                                 :style="`background-color: ${form.color}; width: 30px; height: 30px;`">
+                            </div>
+                            <span x-text="form.name || 'Category Name'"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" 
+                                class="btn btn-primary"
+                                :disabled="loading || !form.name.trim()">
+                            <span x-show="!loading" x-text="submitButtonText"></span>
+                            <span x-show="loading">
+                                <span class="spinner-border spinner-border-sm me-2"></span>Saving...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function categoriesApp() {
+    return {
+        categories: [],
+        loading: false,
+        
+        async loadCategories() {
+            this.loading = true;
+            try {
+                const data = await ExpenseTracker.categoryManager.loadCategories();
+                this.categories = data.categories;
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async deleteCategory(id) {
+            if (confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+                try {
+                    // Note: This would need to be implemented in the API
+                    ExpenseTracker.utils.showToast('Category deletion not yet implemented', 'info');
+                } catch (error) {
+                    console.error('Failed to delete category:', error);
+                }
+            }
+        },
+        
+        openModal(mode, category = null) {
+            window.categoryModal = { mode, category };
+        },
+        
+        formatDate(date) {
+            return ExpenseTracker.utils.formatDate(date);
+        }
+    }
+}
+
+function categoryFormApp() {
+    return {
+        mode: 'add',
+        categoryId: null,
+        form: {
+            name: '',
+            description: '',
+            color: '#007bff'
+        },
+        loading: false,
+        predefinedColors: [
+            '#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8',
+            '#6f42c1', '#e83e8c', '#fd7e14', '#20c997', '#6c757d'
+        ],
+        
+        get modalTitle() {
+            return this.mode === 'add' ? 'Add New Category' : 'Edit Category';
+        },
+        
+        get submitButtonText() {
+            return this.mode === 'add' ? 'Create Category' : 'Update Category';
+        },
+        
+        init() {
+            const modal = document.getElementById('categoryModal');
+            modal.addEventListener('show.bs.modal', () => {
+                if (window.categoryModal) {
+                    this.mode = window.categoryModal.mode;
+                    if (window.categoryModal.category) {
+                        this.loadCategoryData(window.categoryModal.category);
+                    } else {
+                        this.resetForm();
+                    }
+                }
+            });
+        },
+        
+        loadCategoryData(category) {
+            this.categoryId = category.id;
+            this.form = {
+                name: category.name,
+                description: category.description || '',
+                color: category.color
+            };
+        },
+        
+        resetForm() {
+            this.categoryId = null;
+            this.form = {
+                name: '',
+                description: '',
+                color: '#007bff'
+            };
+        },
+        
+        async submitForm() {
+            this.loading = true;
+            try {
+                if (this.mode === 'add') {
+                    await ExpenseTracker.categoryManager.createCategory(this.form);
+                } else {
+                    // Update would need to be implemented in the API
+                    ExpenseTracker.utils.showToast('Category update not yet implemented', 'info');
+                }
+                
+                bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+                window.dispatchEvent(new CustomEvent('category-updated'));
+                
+            } catch (error) {
+                console.error('Failed to save category:', error);
+            } finally {
+                this.loading = false;
+            }
+        }
+    }
+}
+
+// Listen for category updates
+window.addEventListener('category-updated', function() {
+    if (window.categoriesAppInstance) {
+        window.categoriesAppInstance.loadCategories();
+    }
+});
+</script>
+{% endblock %}

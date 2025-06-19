@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Expense Tracker",
+			"type": "shell",
+			"command": "c:/Users/jojo/alpinejs/venv/Scripts/python.exe",
+			"args": [
+				"run.py"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
