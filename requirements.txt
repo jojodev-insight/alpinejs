@@ -7,6 +7,5 @@ Flask-Bcrypt==1.0.1
 Flask-CORS==4.0.0
 python-dotenv==1.0.0
 reportlab==4.0.4
-pandas==2.1.1
 pytest==7.4.2
 pytest-flask==1.2.0

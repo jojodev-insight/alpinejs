@@ -254,10 +254,12 @@ def export_csv():
         ])
     
     output.seek(0)
+      # Format current timestamp for filename
+    current_timestamp = datetime.now().strftime("%Y%m%d")
     
     return jsonify({
         'csv_data': output.getvalue(),
-        'filename': f'expenses_{datetime.now().strftime("%Y%m%d")}.csv'
+        'filename': f'expenses_{current_timestamp}.csv'
     })
 
 
@@ -285,8 +287,7 @@ def get_summary_stats():
     # Average expense
     avg_expense = db.session.query(func.avg(Expense.amount))\
         .filter_by(user_id=current_user.id).scalar() or 0
-    
-    # Top category this month
+      # Top category this month
     top_category = db.session.query(
         Category.name,
         func.sum(Expense.amount).label('total')

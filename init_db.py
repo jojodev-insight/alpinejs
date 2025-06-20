@@ -3,6 +3,7 @@ Database initialization with default categories
 """
 from app import create_app, db
 from app.models.expense import Category
+from app.models.user import User
 
 def init_database():
     """Initialize database with default categories"""
